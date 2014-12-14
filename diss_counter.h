@@ -1,8 +1,5 @@
-typedef double diss_counter_float;
-
-typedef diss_counter_float (*diss_counter_prob_f)(void *, unsigned, void *);
-typedef void (*diss_counter_iter_f)(void *, unsigned *, diss_counter_float,
-    void *);
+typedef double (*diss_counter_prob_f)(void *, unsigned, void *);
+typedef void (*diss_counter_iter_f)(void *, unsigned *, double, void *);
 
 struct diss_counter;
 
@@ -16,4 +13,4 @@ void diss_counter_set_counts(struct diss_counter *, unsigned *);
 void *diss_counter_get_data(struct diss_counter *);
 void *diss_counter_get_elem(struct diss_counter *, unsigned);
 void diss_counter_iter(struct diss_counter *, diss_counter_iter_f);
-
+void diss_counter_set_prob_fun(struct diss_counter *, diss_counter_prob_f);

@@ -50,11 +50,12 @@ diss_counter_destroy(struct diss_counter *dc)
 void *
 diss_counter_next(struct diss_counter *dc)
 {
-	diss_counter_float r = (double)rand()/(double)RAND_MAX * dc->sum;
+	diss_counter_float r =
+	    (diss_counter_float)rand()/(diss_counter_float)RAND_MAX * dc->sum;
 	dc->sum = 0;
 	void *chosen = NULL;
 	struct diss_counter_entry *iter = dc->end;
-	while (--iter >= dc->table) {
+	while (--iter != dc->table) {
 		if (chosen) {
 			++iter->count;
 		} else {
@@ -79,6 +80,18 @@ diss_counter_n(const struct diss_counter *dc)
 }
 
 void
+diss_counter_reset_counts(struct diss_counter *dc, unsigned c)
+{
+	struct diss_counter_entry *iter = dc->end;
+	dc->sum = 0;
+	while (--iter != dc->table) {
+		iter->count = c;
+		iter->prob = dc->prob_f(iter->x, iter->count, dc->data);
+		dc->sum += iter->prob;
+	}
+}
+
+void
 diss_counter_set_counts(struct diss_counter *dc, unsigned *counts)
 {
 	dc->sum = 0;
@@ -95,3 +108,19 @@ diss_counter_get_data(struct diss_counter *dc)
 {
 	return dc->data;
 }
+
+void *
+diss_counter_get_elem(struct diss_counter *dc, unsigned i)
+{
+	return dc->table[i].x;
+}
+
+void
+diss_counter_iter(struct diss_counter *dc, diss_counter_iter_f f)
+{
+	struct diss_counter_entry *iter = dc->end;
+	while (--iter != dc->table) {
+		f(iter->x, &iter->count, iter->prob / dc->sum, dc->data);
+	}
+}
+

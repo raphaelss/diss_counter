@@ -1,4 +1,4 @@
-FLAGS = -std=c11 -O3 -march=native -flto
+FLAGS = -std=c99 -O2 -march=native
 LIBS = -lm
 CC = gcc
 EXE = diss_counter_example

@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <time.h>
+
 #include "diss_counter.h"
 
 void usage(void);
@@ -22,7 +23,7 @@ main(int argc, char **argv)
 	for (int i = 0; i < n; ++i) {
 		printf("%s ", *(char **)diss_counter_next(dc));
 	}
-	puts("");
+	putchar('\n');
 	diss_counter_destroy(dc);
 	return 0;
 }
@@ -36,6 +37,6 @@ usage(void)
 double
 power_fun(void *x, unsigned count, void *data)
 {
-	return pow(count, *(double*)data);
+	return pow(count, *((double*)data));
 }
 

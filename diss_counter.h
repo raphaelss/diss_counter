@@ -15,7 +15,7 @@ void diss_counter_reset_counts(struct diss_counter *, unsigned);
 void diss_counter_set_counts(struct diss_counter *, unsigned *);
 void *diss_counter_get_data(struct diss_counter *);
 void *diss_counter_get_elem(struct diss_counter *, unsigned);
-void diss_counter_iter(struct diss_counter *, diss_counter_iter_f);
+void diss_counter_iter(struct diss_counter *, diss_counter_iter_f, void *);
 void diss_counter_set_prob_fun(struct diss_counter *, diss_counter_prob_f);
 
 #endif

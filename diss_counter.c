@@ -3,7 +3,8 @@
 #include <string.h>
 
 #define ENTRY_SIZE(dc) (sizeof(struct diss_counter_entry) + (dc)->size)
-#define STEP_TABLE_ITER(table_iter, dc) ((struct diss_counter_entry *)((char *)(table_iter) + ENTRY_SIZE(dc)))
+#define STEP_TABLE_ITER(table_iter, dc) \
+	((struct diss_counter_entry *)((char *)(table_iter) + ENTRY_SIZE(dc)))
 
 struct diss_counter_entry {
 	unsigned count;
@@ -122,13 +123,13 @@ diss_counter_get_elem(struct diss_counter *dc, unsigned i)
 }
 
 void
-diss_counter_iter(struct diss_counter *dc, diss_counter_iter_f f)
+diss_counter_iter(struct diss_counter *dc, diss_counter_iter_f f, void *data)
 {
 	double old_sum = dc->sum;
 	dc->sum = 0;
 	struct diss_counter_entry *iter = dc->end;
 	while (--iter >= dc->table) {
-		f(iter->x, &iter->count, iter->prob / old_sum, dc->data);
+		f(iter->x, &iter->count, iter->prob / old_sum, data);
 		iter->prob = dc->prob_f(iter->x, iter->count, dc->data);
 		dc->sum += iter->prob;
 	}

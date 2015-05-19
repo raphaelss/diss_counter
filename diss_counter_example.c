@@ -25,6 +25,7 @@ main(int argc, char **argv)
 		printf("%s ", *(char **)diss_counter_next(dc));
 	}
 	putchar('\n');
+	diss_counter_reset_counts(dc, 1);
 	diss_counter_iter(dc, dump, NULL);
 	diss_counter_destroy(dc);
 	return 0;

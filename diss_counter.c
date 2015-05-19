@@ -5,9 +5,9 @@
 #define STEP_TABLE_ITER(table_iter, dc) \
 	((struct diss_counter_entry *)(((char *)table_iter) + ENTRY_SIZE(dc)))
 #define TABLE_LOOP(pair, dc) \
-	for (struct {size_t k; struct diss_counter_entry *iter;} pair = { 0, dc->table}; \
-	    pair.k < dc->length; \
-	    pair.iter = STEP_TABLE_ITER(pair.iter, dc), ++pair.k)
+	for (struct {size_t count; struct diss_counter_entry *iter;} pair = { 0, dc->table}; \
+	    pair.count < dc->length; \
+	    pair.iter = STEP_TABLE_ITER(pair.iter, dc), ++pair.count)
 
 struct diss_counter_entry {
 	unsigned count;
@@ -74,7 +74,8 @@ diss_counter_next(struct diss_counter *dc)
 				++pair.iter->count;
 			}
 		}
-		pair.iter->prob = dc->prob_f(pair.iter->obj, pair.iter->count, dc->data);
+		pair.iter->prob =
+		    dc->prob_f(pair.iter->obj, pair.iter->count, dc->data);
 		dc->sum += pair.iter->prob;
 	}
 	return chosen;

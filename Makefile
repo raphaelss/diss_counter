@@ -1,4 +1,4 @@
-FLAGS = -std=c99 -O2 -march=native -g
+FLAGS = -std=c99 -Wall -Werror -O2 -march=native -g
 LIBS = -lm
 CC = gcc
 EXE = diss_counter_example

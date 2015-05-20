@@ -21,20 +21,80 @@
 #include <stdlib.h>
 
 typedef double (*diss_counter_prob_f)(void *, unsigned, void *);
-typedef void (*diss_counter_iter_f)(void *, unsigned *, double, void *);
+typedef int (*diss_counter_cmp_f)(void *, void *, void *);
 
 struct diss_counter;
 
+/**
+* Allocates memory, initializes and returns a struct diss_counter with the elements
+* provided on the first argument, second argument is the size of these elements,
+* third argument is their number and the other arguments are the function to 
+* calculate probability and a data that's stored on the struct and passed to it
+* on every call. Return NULL on failure.
+**/
 struct diss_counter *diss_counter_make(void *, size_t, size_t,
     diss_counter_prob_f, void *);
+
+/**
+* Frees the memory associated with the struct. It is unusable after that. Does
+* nothing if it's called on NULL.
+**/
 void diss_counter_destroy(struct diss_counter *);
+
+/**
+* Return the "next" element of the sequence and updates the counters and
+* probabilities of the elements internally.
+*/
 void *diss_counter_next(struct diss_counter *);
+
+/**
+* Returns the number of elements contained on the struct diss_counter.
+*/
 size_t diss_counter_length(const struct diss_counter *);
+
+/**
+* Sets the count of every element to the number passed as parameter.
+*/
 void diss_counter_reset_counts(struct diss_counter *, unsigned);
-void diss_counter_set_counts(struct diss_counter *, unsigned *);
+
+/**
+* Returns a pointer the associated data given in the make function that
+* is passed to the function to calculate probabilities
+**/
 void *diss_counter_get_data(struct diss_counter *);
-void *diss_counter_get_elem(struct diss_counter *, unsigned);
-void diss_counter_iter(struct diss_counter *, diss_counter_iter_f, void *);
+
+/**
+* Set the data that is passed to the prob_fun on every call. An additional
+* flag passed as parameter determines (when true) if the probabilities
+* must be recalculated.
+**/
+void diss_counter_set_data(struct diss_counter *, void *, int);
+
+/**
+* Returns the element at the index.
+**/
+void *diss_counter_get_elem(struct diss_counter *, size_t);
+
+/**
+* Returns the count of the element at the index.
+**/
+unsigned diss_counter_get_count(struct diss_counter *, size_t);
+
+/**
+* Sets the count of the element at the index. Its probability is recalculated.
+**/
+void diss_counter_set_count(struct diss_counter *, size_t, unsigned);
+
+/**
+* Searches the contained elements for an element that is equal to the obj passed
+* as parameter using the comparison function. An additional data is passed as
+* parameter and is used as the third argument of the comparison function.
+**/
+size_t diss_counter_get_index(struct diss_counter *, void *, diss_counter_cmp_f, void *);
+
+/**
+* Sets the probabiity function. Every probability is recalculated.
+**/
 void diss_counter_set_prob_fun(struct diss_counter *, diss_counter_prob_f);
 
 #endif

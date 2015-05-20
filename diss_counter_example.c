@@ -25,7 +25,6 @@
 
 void usage(void);
 double power_fun(void *x, unsigned count, void *data);
-void dump(void *, unsigned *, double, void *);
 
 int
 main(int argc, char **argv)
@@ -43,8 +42,6 @@ main(int argc, char **argv)
 		printf("%s ", *(char **)diss_counter_next(dc));
 	}
 	putchar('\n');
-	diss_counter_reset_counts(dc, 1);
-	diss_counter_iter(dc, dump, NULL);
 	diss_counter_destroy(dc);
 	return 0;
 }
@@ -59,10 +56,4 @@ double
 power_fun(void *x, unsigned count, void *data)
 {
 	return pow(count, *((double*)data));
-}
-
-void
-dump(void *obj, unsigned *count, double prob, void *data)
-{
-	printf ("%s: %u %.2f\n", *((char **)obj), *count, prob);
 }

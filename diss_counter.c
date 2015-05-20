@@ -23,9 +23,11 @@
 #define STEP_TABLE_ITER(table_iter, dc) \
 	((struct diss_counter_entry *)(((char *)table_iter) + ENTRY_SIZE(dc)))
 #define TABLE_LOOP(pair, dc) \
-	for (struct {size_t count; struct diss_counter_entry *iter;} pair = { 0, dc->table}; \
-	    pair.count < dc->length; \
-	    pair.iter = STEP_TABLE_ITER(pair.iter, dc), ++pair.count)
+	for (struct {size_t index; struct diss_counter_entry *iter;} pair = { 0, dc->table}; \
+	    pair.index < dc->length; \
+	    pair.iter = STEP_TABLE_ITER(pair.iter, dc), ++pair.index)
+#define AT_INDEX(dc, i) \
+	(*((struct diss_counter_entry *)(((char *)(dc)->table) + ((i) * ENTRY_SIZE(dc)))))
 
 struct diss_counter_entry {
 	unsigned count;
@@ -41,6 +43,16 @@ struct diss_counter {
 	size_t length;
 	struct diss_counter_entry table [];
 };
+
+static void
+recalc_probs(struct diss_counter *dc)
+{
+	dc->sum = 0;
+	TABLE_LOOP(pair, dc) {
+		pair.iter->prob = dc->prob_f(pair.iter->obj, pair.iter->count, dc->data);
+		dc->sum += pair.iter->prob;
+	}
+}
 
 struct diss_counter *
 diss_counter_make(void *elems, size_t size, size_t n,
@@ -116,49 +128,58 @@ diss_counter_reset_counts(struct diss_counter *dc, unsigned c)
 	}
 }
 
-void
-diss_counter_set_counts(struct diss_counter *dc, unsigned *counts)
-{
-	dc->sum = 0;
-	TABLE_LOOP(pair, dc) {
-		pair.iter->count = *counts++;
-		pair.iter->prob = dc->prob_f(pair.iter->obj, pair.iter->count, dc->data);
-		dc->sum += pair.iter->prob;
-	}
-}
-
 void *
 diss_counter_get_data(struct diss_counter *dc)
 {
 	return dc->data;
 }
 
-void *
-diss_counter_get_elem(struct diss_counter *dc, unsigned i)
+void
+diss_counter_set_data(struct diss_counter *dc, void *data, int recalc)
 {
-	return dc->table[i].obj;
+	dc->data = data;
+	if (recalc) {
+		recalc_probs(dc);
+	}
+}
+
+void *
+diss_counter_get_elem(struct diss_counter *dc, size_t i)
+{
+	return AT_INDEX(dc, i).obj;
+}
+
+unsigned
+diss_counter_get_count(struct diss_counter *dc, size_t i)
+{
+	return AT_INDEX(dc, i).count;
 }
 
 void
-diss_counter_iter(struct diss_counter *dc, diss_counter_iter_f f, void *data)
+diss_counter_set_count(struct diss_counter *dc, size_t i, unsigned count)
 {
-	double old_sum = dc->sum;
-	dc->sum = 0;
-	TABLE_LOOP(pair, dc) {
-		f(pair.iter->obj, &pair.iter->count, pair.iter->prob / old_sum, data);
-		pair.iter->prob = dc->prob_f(pair.iter->obj, pair.iter->count, dc->data);
-		dc->sum += pair.iter->prob;
-	}
+	struct diss_counter_entry *entry = &AT_INDEX(dc, i);
+	entry->count = count;
+	dc->sum -= entry->prob;
+	dc->sum += (entry->prob = dc->prob_f(entry->obj, entry->count, dc->data));
 }
+
+size_t
+diss_counter_get_index(struct diss_counter *dc , void *obj, diss_counter_cmp_f f, void *data)
+{
+	TABLE_LOOP(pair, dc) {
+		if (f(pair.iter->obj, obj, data)) {
+			return pair.index;
+		}
+	}
+	return dc->length;
+}
+
 
 void
 diss_counter_set_prob_f(struct diss_counter * dc, diss_counter_prob_f f)
 {
 	dc->prob_f = f;
-	dc->sum = 0;
-	TABLE_LOOP(pair, dc) {
-		pair.iter->prob = dc->prob_f(pair.iter->obj, pair.iter->count, dc->data);
-		dc->sum += pair.iter->prob;
-	}
+	recalc_probs(dc);
 }
 

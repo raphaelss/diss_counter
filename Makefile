@@ -5,10 +5,13 @@ EXE = diss_counter_example
 
 $(EXE): diss_counter_example.c diss_counter.o
 	$(CC) $(FLAGS) diss_counter_example.c diss_counter.o $(LIBS) -o $(EXE)
-	
+
 static: diss_counter.o
 	ar rcs libdiss_counter.a diss_counter.o
-	
+
+dynamic: diss_counter.o
+	gcc -shared -Wl,-soname,libdiss_counter.so.0 -o libdiss_counter.so.0.0.1 diss_counter.o
+
 diss_counter.o: diss_counter.c diss_counter.h
 	$(CC) $(FLAGS) -fPIC -c diss_counter.c
 

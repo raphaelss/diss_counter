@@ -1,12 +1,15 @@
 FLAGS = -std=c99 -Wall -Werror -O2 -march=native -g
 LIBS = -lm
-CC = gcc
-EXE = diss_counter_example
+EXE = diss_counter
 
-$(EXE): diss_counter_example.c diss_counter.o
-	$(CC) $(FLAGS) diss_counter_example.c diss_counter.o $(LIBS) -o $(EXE)
+.PHONY: clean
 
-static: diss_counter.o
+$(EXE): diss_counter_example.c libdiss_counter.a
+	cc -static $(FLAGS) diss_counter_example.c -L. -ldiss_counter $(LIBS) -o $(EXE)
+
+static: libdiss_counter.a
+
+libdiss_counter.a: diss_counter.o
 	ar rcs libdiss_counter.a diss_counter.o
 
 dynamic: diss_counter.o
@@ -16,4 +19,4 @@ diss_counter.o: diss_counter.c diss_counter.h
 	$(CC) $(FLAGS) -fPIC -c diss_counter.c
 
 clean:
-	rm $(EXE)
+	rm $(EXE) libdiss_counter.a
